@@ -1,5 +1,8 @@
  #include <gtkmm.h>
  #include <iostream>
+ #include <thread>
+
+ extern "C" int calcularProbabilidad(int unidadDeTiempo,int probabilidad,int correccion,int desecho);
 
 class App : public Gtk::Window
 {
@@ -10,10 +13,10 @@ class App : public Gtk::Window
             correccionLabel.set_text("Tiempo de corrección (segundos)");
             desechoLabel.set_text("Tiempo de desecho (segundos)");
             etapa1.set_text("Etapa 1");
-            etapa2.set_text("Etapa 1");
-            etapa3.set_text("Etapa 1");
-            etapa4.set_text("Etapa 1");
-            etapa5.set_text("Etapa 1");
+            etapa2.set_text("Etapa 2");
+            etapa3.set_text("Etapa 3");
+            etapa4.set_text("Etapa 4");
+            etapa5.set_text("Etapa 5");
             porcentajes.set_text("Porcentajes de error por etapa");
 
             set_default_size(1000, 800);
@@ -57,6 +60,37 @@ class App : public Gtk::Window
                 sigc::mem_fun(*this,&App::startProgramOnClick)
             );
 
+            etapa1_1.set_margin_top(50);
+            etapa1_2.set_margin_top(50);
+            etapa1_3.set_margin_top(50);
+            etapa2_1.set_margin_top(50);
+            etapa2_2.set_margin_top(50);
+            etapa2_3.set_margin_top(50);
+            etapa3_1.set_margin_top(50);
+            etapa3_2.set_margin_top(50);
+            etapa3_3.set_margin_top(50);
+            etapa4_1.set_margin_top(50);
+            etapa4_2.set_margin_top(50);
+            etapa4_3.set_margin_top(50);
+            etapa5_1.set_margin_top(50);
+            etapa5_2.set_margin_top(50);
+            etapa5_3.set_margin_top(50);
+
+            etapa2_1.set_margin_left(12);
+            etapa2_2.set_margin_left(12);
+            etapa2_3.set_margin_left(12);
+            etapa3_1.set_margin_left(12);
+            etapa3_2.set_margin_left(12);
+            etapa3_3.set_margin_left(12);
+            etapa4_1.set_margin_left(12);
+            etapa4_2.set_margin_left(12);
+            etapa4_3.set_margin_left(12);
+            etapa5_1.set_margin_left(12);
+            etapa5_2.set_margin_left(12);
+            etapa5_3.set_margin_left(12);
+
+            
+            
             //Poner widgets en el grid
 
             //Row 1
@@ -85,6 +119,28 @@ class App : public Gtk::Window
             grid.attach(etapa4,4,3,1,1);
             grid.attach(etapa5,5,3,1,1);
 
+            //Row 5
+            grid.attach(etapa1_1,0,4,1,2);
+            grid.attach(etapa2_1,1,4,1,2);
+            grid.attach(etapa3_1,2,4,2,2);
+            grid.attach(etapa4_1,4,4,1,2);
+            grid.attach(etapa5_1,5,4,1,2);
+
+
+            //Row 7
+            grid.attach(etapa1_2,0,6,1,2);
+            grid.attach(etapa2_2,1,6,1,2);
+            grid.attach(etapa3_2,2,6,2,2);
+            grid.attach(etapa4_2,4,6,1,2);
+            grid.attach(etapa5_2,5,6,1,2);
+
+            //Row 9
+            grid.attach(etapa1_3,0,8,1,2);
+            grid.attach(etapa2_3,1,8,1,2);
+            grid.attach(etapa3_3,2,8,2,2);
+            grid.attach(etapa4_3,4,8,1,2);
+            grid.attach(etapa5_3,5,8,1,2);
+
             add(grid);
 
             show_all_children();
@@ -92,21 +148,89 @@ class App : public Gtk::Window
         }
 
     private:
+
         void startProgramOnClick(){
             int unidad,porcentaje1,porcentaje2,porcentaje3,porcentaje4,porcentaje5,correccion,desecho;
-            unidad = std::stoi(entry1.get_text());
-            porcentaje1 = std::stoi(error1.get_text());
-            porcentaje2 = std::stoi(error2.get_text());
-            porcentaje3 = std::stoi(error3.get_text());
-            porcentaje4 = std::stoi(error4.get_text());
-            porcentaje5 = std::stoi(error5.get_text());
-            correccion = std::stoi(correccionEntry.get_text());
-            desecho = std::stoi(desechoEntry.get_text());
-
+            //startProgram.override_background_color(Gdk::RGBA("red"));
+            show_all_children();
+            try{
+                unidad = std::stoi(entry1.get_text());
+                porcentaje1 = std::stoi(error1.get_text());
+                porcentaje2 = std::stoi(error2.get_text());
+                porcentaje3 = std::stoi(error3.get_text());
+                porcentaje4 = std::stoi(error4.get_text());
+                porcentaje5 = std::stoi(error5.get_text());
+                correccion = std::stoi(correccionEntry.get_text());
+                desecho = std::stoi(desechoEntry.get_text());
+            }catch(std::exception e){
+                return;
+            }
+            startLine(unidad,porcentaje1,porcentaje2,porcentaje3,porcentaje4,porcentaje5,correccion,desecho);
             std::cout << unidad << ","  << correccion << "," << desecho << "," << porcentaje1 << "," << porcentaje2 << "," << porcentaje3 << "," << porcentaje4 << "," << porcentaje5 << std::endl;
         }
 
+        void startLine(int unidad,int porcentaje1,int porcentaje2,int porcentaje3,int porcentaje4,int porcentaje5,int correccion,int desecho){
+            while(true){
+                for(int i=0;i<5;i++){
+                    int errorState = 0;
+                    switch(i){
+                        case 0:
+                            etapa1_1.override_background_color(Gdk::RGBA("red"));
+                            etapa2_1.override_background_color(Gdk::RGBA("white"));
+                            etapa3_1.override_background_color(Gdk::RGBA("white"));
+                            etapa4_1.override_background_color(Gdk::RGBA("white"));
+                            etapa5_1.override_background_color(Gdk::RGBA("white"));
+                            errorState = calcularProbabilidad(unidad,porcentaje1,correccion,desecho);
+                            break;
+                        case 1:
+                            etapa1_1.override_background_color(Gdk::RGBA("white"));
+                            etapa2_1.override_background_color(Gdk::RGBA("red"));
+                            etapa3_1.override_background_color(Gdk::RGBA("white"));
+                            etapa4_1.override_background_color(Gdk::RGBA("white"));
+                            etapa5_1.override_background_color(Gdk::RGBA("white"));
+                            errorState = calcularProbabilidad(unidad,porcentaje2,correccion,desecho);
+                            break;
+                        case 2:
+                            etapa1_1.override_background_color(Gdk::RGBA("white"));
+                            etapa2_1.override_background_color(Gdk::RGBA("white"));
+                            etapa3_1.override_background_color(Gdk::RGBA("red"));
+                            etapa4_1.override_background_color(Gdk::RGBA("white"));
+                            etapa5_1.override_background_color(Gdk::RGBA("white"));
+                            errorState = calcularProbabilidad(unidad,porcentaje3,correccion,desecho);
+                            break;
+                        case 3:
+                            etapa1_1.override_background_color(Gdk::RGBA("white"));
+                            etapa2_1.override_background_color(Gdk::RGBA("white"));
+                            etapa3_1.override_background_color(Gdk::RGBA("white"));
+                            etapa4_1.override_background_color(Gdk::RGBA("red"));
+                            etapa5_1.override_background_color(Gdk::RGBA("white"));
+                            errorState = calcularProbabilidad(unidad,porcentaje4,correccion,desecho);
+                            break;
+                        case 4:
+                            etapa1_1.override_background_color(Gdk::RGBA("white"));
+                            etapa2_1.override_background_color(Gdk::RGBA("white"));
+                            etapa3_1.override_background_color(Gdk::RGBA("white"));
+                            etapa4_1.override_background_color(Gdk::RGBA("white"));
+                            etapa5_1.override_background_color(Gdk::RGBA("red"));
+                            errorState = calcularProbabilidad(unidad,porcentaje5,correccion,desecho);
+                            break;
+                    }
+                    show_all_children();
+                }
+            }
+        }
+
+
+        // Elementos de la ventana
+
         Gtk::Grid grid;
+
+        // Colas
+        int cola1 = 0;
+        int cola2 = 0;
+        int cola3 = 0;
+        int cola4 = 0;
+        int cola5 = 0;
 
         //Labels
         Gtk::Label label1;
@@ -131,6 +255,27 @@ class App : public Gtk::Window
         
         //Buttons
         Gtk::Button startProgram;
+
+        Gtk::Button etapa1_1;
+        Gtk::Button etapa1_2;
+        Gtk::Button etapa1_3;
+
+        Gtk::Button etapa2_1;
+        Gtk::Button etapa2_2;
+        Gtk::Button etapa2_3;
+
+        Gtk::Button etapa3_1;
+        Gtk::Button etapa3_2;
+        Gtk::Button etapa3_3;
+
+        Gtk::Button etapa4_1;
+        Gtk::Button etapa4_2;
+        Gtk::Button etapa4_3;
+
+        Gtk::Button etapa5_1;
+        Gtk::Button etapa5_2;
+        Gtk::Button etapa5_3;
+        
 };
 
 int main(int argc, char *argv[])
