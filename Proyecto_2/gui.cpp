@@ -1,6 +1,8 @@
  #include <gtkmm.h>
  #include <iostream>
  #include <thread>
+ #include <chrono>
+typedef std::chrono::high_resolution_clock Clock;
 
  extern "C" int calcularProbabilidad(int unidadDeTiempo,int probabilidad,int correccion,int desecho);
 
@@ -57,7 +59,7 @@ class App : public Gtk::Window
             startProgram.set_margin_left(12);
 
             startProgram.signal_clicked().connect(
-                sigc::mem_fun(*this,&App::startProgramOnClick)
+                sigc::mem_fun(*this,&App::onClick)
             );
 
             etapa1_1.set_margin_top(50);
@@ -147,32 +149,39 @@ class App : public Gtk::Window
 
         }
 
-    private:
+    //private:
+        void onClick(){
+            startProgram.override_background_color(Gdk::RGBA("red"));
+            std::thread t(startProgramOnClick,this);
+            t.detach();
+        }
 
-        void startProgramOnClick(){
+        void static startProgramOnClick(App *window){
             int unidad,porcentaje1,porcentaje2,porcentaje3,porcentaje4,porcentaje5,correccion,desecho;
-            //startProgram.override_background_color(Gdk::RGBA("red"));
-            show_all_children();
             try{
-                unidad = std::stoi(entry1.get_text());
-                porcentaje1 = std::stoi(error1.get_text());
-                porcentaje2 = std::stoi(error2.get_text());
-                porcentaje3 = std::stoi(error3.get_text());
-                porcentaje4 = std::stoi(error4.get_text());
-                porcentaje5 = std::stoi(error5.get_text());
-                correccion = std::stoi(correccionEntry.get_text());
-                desecho = std::stoi(desechoEntry.get_text());
+                unidad = std::stoi(window->entry1.get_text());
+                porcentaje1 = std::stoi(window->error1.get_text());
+                porcentaje2 = std::stoi(window->error2.get_text());
+                porcentaje3 = std::stoi(window->error3.get_text());
+                porcentaje4 = std::stoi(window->error4.get_text());
+                porcentaje5 = std::stoi(window->error5.get_text());
+                correccion = std::stoi(window->correccionEntry.get_text());
+                desecho = std::stoi(window->desechoEntry.get_text());
             }catch(std::exception e){
+                std::cout << "ENTRADA INVALIDA" << std::endl;
                 return;
             }
-            startLine(unidad,porcentaje1,porcentaje2,porcentaje3,porcentaje4,porcentaje5,correccion,desecho);
-            std::cout << unidad << ","  << correccion << "," << desecho << "," << porcentaje1 << "," << porcentaje2 << "," << porcentaje3 << "," << porcentaje4 << "," << porcentaje5 << std::endl;
+            window->startLine(unidad,porcentaje1,porcentaje2,porcentaje3,porcentaje4,porcentaje5,correccion,desecho);
+        }
+
+        int prob(int unidad,int porcentaje,int correccion,int desecho){
+            return calcularProbabilidad(unidad,porcentaje,correccion,desecho);
         }
 
         void startLine(int unidad,int porcentaje1,int porcentaje2,int porcentaje3,int porcentaje4,int porcentaje5,int correccion,int desecho){
-            while(true){
+                int error=0;
                 for(int i=0;i<5;i++){
-                    int errorState = 0;
+                    auto t1 = Clock::now();
                     switch(i){
                         case 0:
                             etapa1_1.override_background_color(Gdk::RGBA("red"));
@@ -180,7 +189,8 @@ class App : public Gtk::Window
                             etapa3_1.override_background_color(Gdk::RGBA("white"));
                             etapa4_1.override_background_color(Gdk::RGBA("white"));
                             etapa5_1.override_background_color(Gdk::RGBA("white"));
-                            errorState = calcularProbabilidad(unidad,porcentaje1,correccion,desecho);
+                            this->show_all_children();
+                            error = prob(unidad,porcentaje1,correccion,desecho);
                             break;
                         case 1:
                             etapa1_1.override_background_color(Gdk::RGBA("white"));
@@ -188,7 +198,8 @@ class App : public Gtk::Window
                             etapa3_1.override_background_color(Gdk::RGBA("white"));
                             etapa4_1.override_background_color(Gdk::RGBA("white"));
                             etapa5_1.override_background_color(Gdk::RGBA("white"));
-                            errorState = calcularProbabilidad(unidad,porcentaje2,correccion,desecho);
+                            this->show_all_children();
+                            error = prob(unidad,porcentaje2,correccion,desecho);
                             break;
                         case 2:
                             etapa1_1.override_background_color(Gdk::RGBA("white"));
@@ -196,7 +207,8 @@ class App : public Gtk::Window
                             etapa3_1.override_background_color(Gdk::RGBA("red"));
                             etapa4_1.override_background_color(Gdk::RGBA("white"));
                             etapa5_1.override_background_color(Gdk::RGBA("white"));
-                            errorState = calcularProbabilidad(unidad,porcentaje3,correccion,desecho);
+                            this->show_all_children();
+                            error = prob(unidad,porcentaje3,correccion,desecho);
                             break;
                         case 3:
                             etapa1_1.override_background_color(Gdk::RGBA("white"));
@@ -204,7 +216,8 @@ class App : public Gtk::Window
                             etapa3_1.override_background_color(Gdk::RGBA("white"));
                             etapa4_1.override_background_color(Gdk::RGBA("red"));
                             etapa5_1.override_background_color(Gdk::RGBA("white"));
-                            errorState = calcularProbabilidad(unidad,porcentaje4,correccion,desecho);
+                            this->show_all_children();
+                            error = prob(unidad,porcentaje4,correccion,desecho);
                             break;
                         case 4:
                             etapa1_1.override_background_color(Gdk::RGBA("white"));
@@ -212,12 +225,26 @@ class App : public Gtk::Window
                             etapa3_1.override_background_color(Gdk::RGBA("white"));
                             etapa4_1.override_background_color(Gdk::RGBA("white"));
                             etapa5_1.override_background_color(Gdk::RGBA("red"));
-                            errorState = calcularProbabilidad(unidad,porcentaje5,correccion,desecho);
+                            this->show_all_children();
+                            error = prob(unidad,porcentaje5,correccion,desecho);
                             break;
                     }
-                    show_all_children();
+                    std::cout << i << std::endl;
+                    switch(error){
+                        case 0:
+                            std::cout << "No hay error" << std::endl;
+                            break;
+                        case 1:
+                            std::cout << "Correccion" << std::endl;
+                            break;
+                        case 2:
+                            std::cout << "Desecho" << std::endl;
+                            break;
+                    }
+                    auto t2 = Clock::now();
+                    std::cout << "Tiempo: "  << (int)(std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e+9) << std::endl;
+                    std::cout << std::endl;
                 }
-            }
         }
 
 
