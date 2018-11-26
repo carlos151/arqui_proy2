@@ -7,10 +7,6 @@ Instalar gtkmm: sudo apt-get install libgtkmm-3.0-dev
 
 Compilar nasm: nasm logica.asm -f elf32 -o logica.o
 
-Compilar logica: g++ -pthread parteLogica.cpp logica.o io.o -m32 
-
-ejecutar logica: ./a.out
-
 Compilar gui: g++ -m32 gui.cpp logica.o io.o -o gui `pkg-config gtkmm-3.0 --cflags --libs`
 
 ejecutar gui: ./gui
